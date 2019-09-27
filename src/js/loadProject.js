@@ -92,6 +92,38 @@
         project.ctjsVersion = nw.App.manifest.version;
     };
 
+    var loadFromFiles = async projectData => {
+        for(const key of ["types", "rooms", "scripts", "actions", "textures", "sound", "styles"]) {
+            projectData[key] = [];
+        }
+
+        const srcDir = sessionStorage.projdir + "/src";
+        for(const key of await fs.readdir(srcDir)) {
+            const subDir = srcDir + "/" + key;
+            console.log(key, projectData[key], (await fs.lstat(subDir)).isDirectory());
+
+            if(Array.isArray(projectData[key]) && (await fs.lstat(subDir)).isDirectory()) {
+                for(const item of await fs.readdir(subDir)) {
+                    const itemUrl = subDir + "/" + item;
+
+                    if((await fs.lstat(itemUrl)).isDirectory()) {
+                        const object = await fs.readJSON(itemUrl + "/meta.json");
+                        for(const jsFile of await fs.readdir(itemUrl)) {
+                            if(jsFile.indexOf(".js") >= 0) {
+                                object[jsFile.replace(".js", "")] = await fs.readFile(itemUrl + "/" + jsFile);
+                            }
+                        }
+                        projectData[key].push(object);
+                    } else {
+                        projectData[key].push(await fs.readJSON(itemUrl));
+                    }
+                }
+            }
+        }
+
+        console.log(projectData)
+    };
+
     /**
      * Opens the project and refreshes the whole app.
      *
@@ -99,14 +131,20 @@
      * @returns {void}
      */
     var loadProject = async projectData => {
-        const glob = require('./data/node_requires/glob');
-        window.currentProject = projectData;
-        window.alertify.log(window.languageJSON.intro.loadingProject);
-        glob.modified = false;
 
         try {
+            await fs.ensureDir(sessionStorage.projdir);
+            if(projectData.settings.fileBasedStructure) {
+                await loadFromFiles(projectData);
+            }
+
+            const glob = require('./data/node_requires/glob');
+            console.log(projectData);
+            window.currentProject = projectData;
+            window.alertify.log(window.languageJSON.intro.loadingProject);
+            glob.modified = false;
+
             await adapter(projectData);
-            fs.ensureDir(sessionStorage.projdir);
             fs.ensureDir(sessionStorage.projdir + '/img');
             fs.ensureDir(sessionStorage.projdir + '/snd');
 

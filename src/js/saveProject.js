@@ -42,10 +42,9 @@
 					filesToRemove.delete(oldName)
 					if(oldName !== newName) {
 						await fs.move(subDir + "/" + oldName, subDir + "/" + newName);
-					} else {
-            			await fs.ensureDir(subDir + "/" + newName);
 					}
 				}
+				await fs.ensureDir(subDir + "/" + newName);
 
 				// Clean dir from unused files
 				for(const subFile of (await fs.readdir(subDir + "/" + newName))) {
@@ -125,12 +124,7 @@
 				}
 			}
 
-			// Save non array values
-			await fs.outputJSON(srcDir + "/settings.json", currentProject, {
-				spaces: 2
-			});
-
-			return fs.outputJSON(projDir + ".ict", currentProject, {
+			return fs.outputJSON(projDir + ".ict", generalSettings, {
 				spaces: 2
 			});
 		} else {

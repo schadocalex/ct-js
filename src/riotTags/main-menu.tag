@@ -112,7 +112,9 @@ main-menu.flexcol
         };
         this.saveRecovery = () => {
             if (currentProject) {
-                fs.outputJSON(sessionStorage.projdir + '.ict.recovery', currentProject, {
+                const currentProjectRecovery = Object.assign({}, currentProject);
+                currentProjectRecovery.settings.fileBasedStructure = false; // Force recovery in one-file way
+                fs.outputJSON(sessionStorage.projdir + '.ict.recovery', currentProjectRecovery, {
                     spaces: 2
                 });
             }

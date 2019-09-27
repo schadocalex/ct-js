@@ -137,20 +137,21 @@ project-selector
                         linux32: true,
                         mac64: true,
                         debug: false
-                    }
+                    },
+                    fileBasedStructure: false
                 }
             };
-            fs.writeJSON(path.join(way, codename + '.ict'), projectData, function(e) {
+            sessionStorage.projdir = path.join(way, codename);
+            sessionStorage.projname = codename + '.ict';
+            await window.saveProject(sessionStorage.projdir, projectData).then((e) => {
                 if (e) {
                     alertify.error(this.voc.unableToWriteToFolders + '\n' + e);
                     throw e;
                 }
             });
-            sessionStorage.projdir = path.join(way, codename);
-            sessionStorage.projname = codename + '.ict';
             await fs.ensureDir(sessionStorage.projdir + '/img');
-            fs.ensureDir(sessionStorage.projdir + '/snd');
-            fs.ensureDir(sessionStorage.projdir + '/include');
+            await fs.ensureDir(sessionStorage.projdir + '/snd');
+            await fs.ensureDir(sessionStorage.projdir + '/include');
             setTimeout(() => { // for some reason, it must be done through setTimeout; otherwise it fails
                 fs.copy('./data/img/notexture.png', path.join(sessionStorage.projdir + '/img/splash.png'), e => {
                     if (e) {

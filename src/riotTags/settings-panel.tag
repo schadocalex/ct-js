@@ -51,6 +51,16 @@ settings-panel.panel.view
             input(type="checkbox" value="{currentProject.settings.minifyjs}" checked="{currentProject.settings.minifyjs}" onchange="{wire('this.currentProject.settings.minifyjs')}")
             span {voc.minifyjs}
 
+        h2 Internal options
+        label.block(style="margin-right: 2.5rem;")
+            input(
+                type="checkbox"
+                value="{currentProject.settings.fileBasedStructure}"
+                checked="{currentProject.settings.fileBasedStructure}"
+                onchange="{wire('this.currentProject.settings.fileBasedStructure')}"
+            )
+            span File-based Structure Mode (experimental)
+
         //span
             h2 {voc.preloader}
             select#gamepreloader.select(value="{currentProject.preloader}" onchange="{wire('this.currentProject.preloader')}")

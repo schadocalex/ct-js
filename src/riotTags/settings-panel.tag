@@ -49,6 +49,16 @@ settings-panel.panel.view
             label.block.checkbox
                 input(type="checkbox" value="{currentProject.settings.minifyjs}" checked="{currentProject.settings.minifyjs}" onchange="{wire('this.currentProject.settings.minifyjs')}")
                 span {voc.minifyjs}
+        fieldset
+            h2 Experimental options
+            label.block.checkbox
+                input(
+                    type="checkbox"
+                    value="{currentProject.settings.fileBasedStructure}"
+                    checked="{currentProject.settings.fileBasedStructure}"
+                    onchange="{wire('this.currentProject.settings.fileBasedStructure')}"
+                )
+                span File-based Structure Mode
 
     .tall.fifty.flexfix.npr.npt.npb
         h1.flexfix-header {voc.scripts.header}

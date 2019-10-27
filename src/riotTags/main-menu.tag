@@ -98,9 +98,8 @@ main-menu.flexcol
             catMenu.popup(e.clientX, e.clientY);
         };
         this.saveProject = () => {
-            return fs.outputJSON(sessionStorage.projdir + '.ict', currentProject, {
-                spaces: 2
-            }).then(() => {
+            return window.saveProject(sessionStorage.projdir, currentProject)
+            .then(() => {
                 alertify.success(languageJSON.common.savedcomm, "success", 3000);
                 this.saveRecoveryDebounce();
                 fs.remove(sessionStorage.projdir + '.ict.recovery')
@@ -112,7 +111,9 @@ main-menu.flexcol
         };
         this.saveRecovery = () => {
             if (currentProject) {
-                fs.outputJSON(sessionStorage.projdir + '.ict.recovery', currentProject, {
+                const currentProjectRecovery = Object.assign({}, currentProject);
+                currentProjectRecovery.settings.fileBasedStructure = false; // Force recovery in one-file way
+                fs.outputJSON(sessionStorage.projdir + '.ict.recovery', currentProjectRecovery, {
                     spaces: 2
                 });
             }

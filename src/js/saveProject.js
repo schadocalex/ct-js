@@ -4,9 +4,9 @@
         path = require("path");
         
     const resources = {
-        types: ['onstep', 'ondraw', 'oncreate', 'ondestroy'],
-        rooms: ['onstep', 'ondraw', 'onleave', 'oncreate'],
-        scripts: ['code'],
+        types: ['onstep.js', 'ondraw.js', 'oncreate.js', 'ondestroy.js'],
+        rooms: ['onstep.js', 'ondraw.js', 'onleave.js', 'oncreate.js', 'backgrounds.json', 'copies.json', 'tiles.json'],
+        scripts: ['code.js'],
         actions: [],
         textures: [],
         sounds: [],
@@ -42,14 +42,21 @@
 
 				// Clean dir from unexpected files
 				for(const subFile of (await fs.readdir(dirPath))) {
-					if(jsFilesProperties.indexOf(subFile.replace(".js", "")) < 0) {
+					if(jsFilesProperties.indexOf(subFile) < 0) {
 						await fs.remove(dirPath + "/" + subFile);
 					}
 				}
 
 				// Write sub files
-				for(const jsFileProperty of jsFilesProperties) {
-					await fs.writeFile(path.join(dirPath, jsFileProperty + '.js'), item[jsFileProperty]);
+				for(const jsFilePath of jsFilesProperties) {
+                    const [jsFileProperty, ext] = jsFilePath.split('.');
+                    if(ext === 'js') {
+                        await fs.writeFile(path.join(dirPath, jsFilePath), item[jsFileProperty]);
+                    } else if(ext === 'json') {
+                        await fs.outputJSON(path.join(dirPath, jsFilePath), item[jsFileProperty], {
+                            spaces: 2
+                        });
+                    }
 					delete metaObject[jsFileProperty];
 				}
 

@@ -93,9 +93,9 @@
     };
 
     const resources = { // TODO share this with saveProject one
-        types: ['onstep', 'ondraw', 'oncreate', 'ondestroy'],
-        rooms: ['onstep', 'ondraw', 'onleave', 'oncreate'],
-        scripts: ['code'],
+        types: ['onstep.js', 'ondraw.js', 'oncreate.js', 'ondestroy.js'],
+        rooms: ['onstep.js', 'ondraw.js', 'onleave.js', 'oncreate.js', 'backgrounds.json', 'copies.json', 'tiles.json'],
+        scripts: ['code.js'],
         actions: [],
         textures: [],
         sounds: [],
@@ -106,7 +106,6 @@
         // Loop over resources dirs
         for(const key in resources) {
             projectData[key] = [];
-            console.log('>>>>>>>>>>>>>', key);
 
             const dirPath = path.join(sessionStorage.projdir, key);
             await fs.ensureDir(dirPath);
@@ -122,16 +121,21 @@
                 
                 try {
                     const resourceObject = await fs.readJSON(resourceFilePath);
-                    console.log(resourceFileName, resourceObject);
                     
                     // Get sub files
                     if(resources[key].length > 0) {
                         const resourceName = resourceFileName.replace('.json', ''); // Assume all .json files are resources files
 
                         for(const subFileName of resources[key]) {
-                            const subFilePath = path.join(dirPath, resourceName, subFileName + '.js');
+                            const subFilePath = path.join(dirPath, resourceName, subFileName);
                             await fs.ensureFile(subFilePath);
-                            resourceObject[subFileName] = (await fs.readFile(subFilePath)).toString();
+
+                            const [propertyName, ext] = subFileName.split('.');
+                            if(ext === 'js') {
+                                resourceObject[propertyName] = (await fs.readFile(subFilePath)).toString();
+                            } else if(ext === 'json') {
+                                resourceObject[propertyName] = await fs.readJSON(subFilePath);
+                            }
                         }
                     }
 

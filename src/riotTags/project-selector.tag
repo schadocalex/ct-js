@@ -141,14 +141,14 @@ project-selector
                     fileBasedStructure: false
                 }
             };
-            fs.writeJSON(path.join(way, codename + '.ict'), projectData, function(e) {
-                if (e) {
-                    alertify.error(this.voc.unableToWriteToFolders + '\n' + e);
-                    throw e;
-                }
-            });
             sessionStorage.projdir = path.join(way, codename);
             sessionStorage.projname = codename + '.ict';
+            try {
+                await window.saveProject(sessionStorage.projdir, projectData);
+            } catch (e) {
+                alertify.error(this.voc.unableToWriteToFolders + '\n' + e);
+                throw e;
+            }
             await fs.ensureDir(sessionStorage.projdir + '/img');
             fs.ensureDir(sessionStorage.projdir + '/snd');
             fs.ensureDir(sessionStorage.projdir + '/include');

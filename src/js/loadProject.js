@@ -92,19 +92,9 @@
         project.ctjsVersion = nw.App.manifest.version;
     };
 
-    const resources = { // TODO share this with saveProject one
-        types: ['onstep.js', 'ondraw.js', 'oncreate.js', 'ondestroy.js'],
-        rooms: ['onstep.js', 'ondraw.js', 'onleave.js', 'oncreate.js', 'backgrounds.json', 'copies.json', 'tiles.json'],
-        scripts: ['code.js'],
-        actions: [],
-        textures: [],
-        sounds: [],
-        styles: [],
-    };
-
     const loadFromFiles = async projectData => {
         // Loop over resources dirs
-        for(const key in resources) {
+        for(const key in window.CT_RESOURCES) {
             projectData[key] = [];
 
             const dirPath = path.join(sessionStorage.projdir, key);
@@ -123,10 +113,10 @@
                     const resourceObject = await fs.readJSON(resourceFilePath);
                     
                     // Get sub files
-                    if(resources[key].length > 0) {
+                    if(window.CT_RESOURCES[key].length > 0) {
                         const resourceName = resourceFileName.replace('.json', ''); // Assume all .json files are resources files
 
-                        for(const subFileName of resources[key]) {
+                        for(const subFileName of window.CT_RESOURCES[key]) {
                             const subFilePath = path.join(dirPath, resourceName, subFileName);
                             await fs.ensureFile(subFilePath);
 

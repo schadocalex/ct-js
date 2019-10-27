@@ -3,7 +3,7 @@
 	const fs = require("fs-extra"),
         path = require("path");
         
-    const resources = {
+    window.CT_RESOURCES = {
         types: ['onstep.js', 'ondraw.js', 'oncreate.js', 'ondestroy.js'],
         rooms: ['onstep.js', 'ondraw.js', 'onleave.js', 'oncreate.js', 'backgrounds.json', 'copies.json', 'tiles.json'],
         scripts: ['code.js'],
@@ -25,7 +25,7 @@
 		const files = await fs.readdir(subDir);
 
 		// Create a files to remove set. At the end, all the remaining files in the set will be removed.
-		const filesToRemove = new Set(files);
+        const filesToRemove = new Set(files);
 
 		if(jsFilesProperties.length > 0) {
 			for(const item of array) {
@@ -67,8 +67,9 @@
 			}
 		} else {
 			for(const item of array) {
-                const filePath = path.join(subDir, item.name + '.json');
-                filesToRemove.delete(filePath);
+                const fileName = item.name + '.json';
+                const filePath = path.join(subDir, fileName);
+                filesToRemove.delete(fileName);
 
                 // Write file
 				await fs.outputJSON(filePath, item, {
@@ -90,8 +91,8 @@
 
 			for(const [key, value] of Object.entries(currentProject)) {
                 const subDir = path.join(projDir, key);
-                if(resources[key]) {
-                    await saveProjectArray(subDir, value, resources[key]);
+                if(window.CT_RESOURCES[key]) {
+                    await saveProjectArray(subDir, value, window.CT_RESOURCES[key]);
                 } else {
                     generalSettings[key] = value;
                 }
@@ -105,5 +106,5 @@
 				spaces: 2
 			});
 		}
-	};
+    };
 })(this);

@@ -32,6 +32,7 @@
 				const metaObject = Object.assign({}, item);
 
                 const metaFile = item.name + '.json';
+                const metaFilePath = path.join(subDir, metaFile);
                 const dirName = item.name;
                 const dirPath = path.join(subDir, dirName);
                 await fs.ensureDir(dirPath);
@@ -53,14 +54,14 @@
 				}
 
 				// Write metadata file
-				await fs.outputJSON(path.join(subDir, metaFile), metaObject, {
+				await fs.outputJSON(metaFilePath, metaObject, {
 					spaces: 2
 				});
 			}
 		} else {
 			for(const item of array) {
                 const filePath = path.join(subDir, item.name + '.json');
-                filesToRemove.delete(item.name);
+                filesToRemove.delete(filePath);
 
                 // Write file
 				await fs.outputJSON(filePath, item, {
@@ -89,12 +90,9 @@
                 }
 			}
 
-			fs.outputJSON(projDir + '.test.ict', generalSettings, {
+			return fs.outputJSON(projDir + '.ict', generalSettings, {
 				spaces: 2
             });
-            return fs.outputJSON(projDir + '.ict', currentProject, {
-				spaces: 2
-			});
 		} else {
 			return fs.outputJSON(projDir + '.ict', currentProject, {
 				spaces: 2

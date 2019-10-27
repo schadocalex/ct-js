@@ -26,7 +26,7 @@
         ];
     };
 
-    var adapter = async project => {
+    const adapter = async project => {
         var version = semverToArray(project.ctjsVersion || '0.2.0');
 
         const migrationToExecute = window.migrationProcess
@@ -92,19 +92,78 @@
         project.ctjsVersion = nw.App.manifest.version;
     };
 
+    const resources = { // TODO share this with saveProject one
+        types: ['onstep', 'ondraw', 'oncreate', 'ondestroy'],
+        rooms: ['onstep', 'ondraw', 'onleave', 'oncreate'],
+        scripts: ['code'],
+        actions: [],
+        textures: [],
+        sounds: [],
+        styles: [],
+    };
+
+    const loadFromFiles = async projectData => {
+        // Loop over resources dirs
+        for(const key in resources) {
+            projectData[key] = [];
+            console.log('>>>>>>>>>>>>>', key);
+
+            const dirPath = path.join(sessionStorage.projdir, key);
+            await fs.ensureDir(dirPath);
+
+            // Loop over resources in the corresponding resource dir
+            for(const resourceFileName of (await fs.readdir(dirPath))) {
+                const resourceFilePath = path.join(dirPath, resourceFileName);
+                
+                // If this is not a file, ignore it
+                if((await fs.lstat(resourceFilePath)).isDirectory()) {
+                    continue;
+                }
+                
+                try {
+                    const resourceObject = await fs.readJSON(resourceFilePath);
+                    console.log(resourceFileName, resourceObject);
+                    
+                    // Get sub files
+                    if(resources[key].length > 0) {
+                        const resourceName = resourceFileName.replace('.json', ''); // Assume all .json files are resources files
+
+                        for(const subFileName of resources[key]) {
+                            const subFilePath = path.join(dirPath, resourceName, subFileName + '.js');
+                            await fs.ensureFile(subFilePath);
+                            resourceObject[subFileName] = (await fs.readFile(subFilePath)).toString();
+                        }
+                    }
+
+                    projectData[key].push(resourceObject);
+                } catch(e) {
+                    console.warn('unexpected resource structure found, will be ignored: ' + resourceFilePath);
+                    // TODO: warn user and rethrow?
+                }
+            }
+        }
+
+        console.log(projectData);
+    };
+
     /**
      * Opens the project and refreshes the whole app.
      *
      * @param {Object} projectData Loaded JSON file, in js object form
      * @returns {void}
      */
-    var loadProject = async projectData => {
-        const glob = require('./data/node_requires/glob');
-        window.currentProject = projectData;
-        window.alertify.log(window.languageJSON.intro.loadingProject);
-        glob.modified = false;
-
+    const loadProject = async projectData => {
         try {
+            await fs.ensureDir(sessionStorage.projdir);
+            if(projectData.settings.fileBasedStructure) {
+                await loadFromFiles(projectData);
+            }
+
+            const glob = require('./data/node_requires/glob');
+            window.currentProject = projectData;
+            window.alertify.log(window.languageJSON.intro.loadingProject);
+            glob.modified = false;
+
             await adapter(projectData);
             fs.ensureDir(sessionStorage.projdir);
             fs.ensureDir(sessionStorage.projdir + '/img');
@@ -140,7 +199,7 @@
      * @param {String} proj The path to the file.
      * @returns {void}
      */
-    var loadProjectFile = proj => {
+    const loadProjectFile = proj => {
         fs.readJSON(proj, (err, projectData) => {
             if (err) {
                 window.alertify.error(err);
@@ -165,7 +224,7 @@
 
         fs.stat(proj + '.recovery', (err, stat) => {
             if (!err && stat.isFile()) {
-                var targetStat = fs.statSync(proj),
+                const targetStat = fs.statSync(proj),
                     voc = window.languageJSON.intro.recovery;
                 window.alertify
                 .okBtn(voc.loadRecovery)

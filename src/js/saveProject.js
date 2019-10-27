@@ -1,7 +1,17 @@
 (function(window) {
 	/* global nw */
 	const fs = require("fs-extra"),
-		path = require("path");
+        path = require("path");
+        
+    const resources = {
+        types: ['onstep', 'ondraw', 'oncreate', 'ondestroy'],
+        rooms: ['onstep', 'ondraw', 'onleave', 'oncreate'],
+        scripts: ['code'],
+        actions: [],
+        textures: [],
+        sounds: [],
+        styles: [],
+    };
 
 	/**
 	 * Checks file format and loads it
@@ -9,7 +19,7 @@
 	 * @param {String} proj The path to the file.
 	 * @returns {void}
 	 */
-	const saveProjectArray = async (subDir, array, fileNameKey, jsFilesProperties) => {
+	const saveProjectArray = async (subDir, array, jsFilesProperties) => {
 		// List files or dirs
 		await fs.ensureDir(subDir);
 		const files = await fs.readdir(subDir);
@@ -17,7 +27,7 @@
 		// Create a files to remove set. At the end, all the remaining files in the set will be removed.
 		const filesToRemove = new Set(files);
 
-		if(jsFilesProperties) {
+		if(jsFilesProperties.length > 0) {
 			for(const item of array) {
 				const metaObject = Object.assign({}, item);
 
@@ -43,7 +53,7 @@
 				}
 
 				// Write metadata file
-				await fs.outputJSON(path.join(dirPath, metaFile), metaObject, {
+				await fs.outputJSON(path.join(subDir, metaFile), metaObject, {
 					spaces: 2
 				});
 			}
@@ -71,28 +81,12 @@
 			const generalSettings = {};
 
 			for(const [key, value] of Object.entries(currentProject)) {
-				const subDir = path.join(projDir, key);
-				switch(key) {
-					case 'types':
-						await saveProjectArray(subDir, value, ['onstep', 'ondraw', 'oncreate', 'ondestroy'])
-						break;
-					case 'rooms':
-						await saveProjectArray(subDir, value, ['onstep', 'ondraw', 'onleave', 'oncreate'])
-						break;
-					case 'scripts':
-						await saveProjectArray(subDir, value, ['code'])
-						break;
-					case 'actions':
-						await saveProjectArray(subDir, value)
-						break;
-					case 'textures':
-					case 'sounds':
-					case 'styles':
-						await saveProjectArray(subDir, value)
-						break;
-					default:
-						generalSettings[key] = value;
-				}
+                const subDir = path.join(projDir, key);
+                if(resources[key]) {
+                    await saveProjectArray(subDir, value, resources[key]);
+                } else {
+                    generalSettings[key] = value;
+                }
 			}
 
 			fs.outputJSON(projDir + '.test.ict', generalSettings, {

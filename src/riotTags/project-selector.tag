@@ -137,7 +137,8 @@ project-selector
                         linux32: true,
                         mac64: true,
                         debug: false
-                    }
+                    },
+                    fileBasedStructure: false
                 }
             };
             fs.writeJSON(path.join(way, codename + '.ict'), projectData, function(e) {
